@@ -1,23 +1,19 @@
 const express = require('express');
+const nunjucks = require('nunjucks')
 const app = express();
+const routes = require('./routes');
+const socketio = require('socket.io');
 
 
-app.listen(3000, () => {console.log('Listening on 3000')});
 
+nunjucks.configure('views', {noCache: true});
+app.set('view engine', 'html'); // have res.render work with html files
+app.engine('html', nunjucks.render); // when giving html files to res.render, tell it to use nunjucks
+nunjucks.configure('views'); // point nunjucks to the proper directory for templates
 
-app.use((req,res,next) =>{
-    console.log("request:", req.method, req.url);
-    next();
-})
+const server = app.listen(3000, () => {console.log('Listening on 3000')});
+const io = socketio.listen(server);
 
-app.get('/', (req,res) => {
-    res.send('semdnig bacsk');
-})
+app.use('/', routes(io));
 
-app.get('/news', (req,res) => {
-    res.send('semdnig bacsk news');
-})
-
-app.use('/special/:id', (req,res,next) => {
-    console.log('special zone');
-})
+app.use('/static',express.static('public'));
